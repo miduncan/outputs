@@ -5,14 +5,14 @@ import * as pWidget from "@lumino/widgets";
 import {
   DOMWidgetView,
   WidgetModel,
-  DOMWidgetModel
+  DOMWidgetModel,
 } from "@jupyter-widgets/base";
 import { WidgetComm } from "./widget-comms";
 import { RecordOf } from "immutable";
 import {
   KernelNotStartedProps,
   LocalKernelProps,
-  RemoteKernelProps
+  RemoteKernelProps,
 } from "@nteract/core";
 import { JupyterMessage } from "@nteract/messaging";
 import { ManagerActions } from "../manager/index";
@@ -42,13 +42,19 @@ export class WidgetManager extends base.ManagerBase<DOMWidgetView> {
     | null;
   actions: ManagerActions["actions"];
   widgetsBeingCreated: { [model_id: string]: Promise<WidgetModel> };
-  customWidgetLoader?: (moduleName: string, moduleVersion: string) => Promise<any>;
+  customWidgetLoader?: (
+    moduleName: string,
+    moduleVersion: string
+  ) => Promise<any>;
 
   constructor(
     kernel: any,
     stateModelById: (id: string) => any,
     actions: ManagerActions["actions"],
-    customWidgetLoader?: (moduleName: string, moduleVersion: string) => Promise<any>
+    customWidgetLoader?: (
+      moduleName: string,
+      moduleVersion: string
+    ) => Promise<any>
   ) {
     super();
     this.kernel = kernel;
@@ -74,8 +80,13 @@ export class WidgetManager extends base.ManagerBase<DOMWidgetView> {
   /**
    * Load a class and return a promise to the loaded object.
    */
-  loadClass(className: string, moduleName: string, moduleVersion: string): Promise<any> {
-    const customWidgetLoader = this.customWidgetLoader ?? widgetLoader.requireLoader;
+  loadClass(
+    className: string,
+    moduleName: string,
+    moduleVersion: string
+  ): Promise<any> {
+    const customWidgetLoader =
+      this.customWidgetLoader ?? widgetLoader.requireLoader;
 
     let widgetPromise: Promise<any>;
     if (moduleName === "@jupyter-widgets/controls") {
@@ -86,17 +97,19 @@ export class WidgetManager extends base.ManagerBase<DOMWidgetView> {
       widgetPromise = customWidgetLoader(moduleName, moduleVersion);
     }
 
-    return widgetPromise.then(function(module: any) {
-      if (module[className]) {
-        return module[className];
-      } else {
-        return Promise.reject(
-          `Class ${className} not found in module ${moduleName}@${moduleVersion}`
-        );
-      }
-    }).catch(function(err: Error) {
+    return widgetPromise
+      .then(function (module: any) {
+        if (module[className]) {
+          return module[className];
+        } else {
+          return Promise.reject(
+            `Class ${className} not found in module ${moduleName}@${moduleVersion}`
+          );
+        }
+      })
+      .catch(function (err: Error) {
         console.warn(err.message);
-    });
+      });
   }
 
   /**
@@ -131,7 +144,7 @@ export class WidgetManager extends base.ManagerBase<DOMWidgetView> {
       model_module_version: state._module_version,
       view_name: state._view_name,
       view_module: state._view_module,
-      view_module_version: state._view_module_version
+      view_module_version: state._view_module_version,
     };
     return this.new_widget(modelInfo, state);
   }
@@ -194,17 +207,22 @@ export class WidgetManager extends base.ManagerBase<DOMWidgetView> {
         output: (reply: JupyterMessage) =>
           this.actions.appendOutput({
             ...reply.content,
-            output_type: reply.header.msg_type
+            output_type: reply.header.msg_type,
           }),
         clear_output: (reply: JupyterMessage) => this.actions.clearOutput(),
-        status: (reply: JupyterMessage) =>
-          this.actions.updateCellStatus(reply.content.execution_state)
+        status: (reply: JupyterMessage) => {
+          /**
+           * Currently, we don't do anything with status messages. Previously,
+           * we updated the cell status, but we removed it because it was confusing
+           * to users and had bugs related to widgets updating the wrong cell's status
+           */
+        },
       },
       input: (reply: JupyterMessage) =>
         this.actions.promptInputRequest(
           reply.content.prompt,
           reply.content.password
-        )
+        ),
     };
   }
 

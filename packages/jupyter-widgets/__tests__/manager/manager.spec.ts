@@ -7,19 +7,18 @@ import * as customWidgetLoader from "../../src/manager/widget-loader";
 
 // A mock valid module representing a custom widget
 const mockFooModule = {
-  "foo" : "bar"
+  foo: "bar",
 };
 // Mock implementation of the core require API
 const mockRequireJS = jest.fn((modules, ready, errCB) => ready(mockFooModule));
 (window as any).requirejs = mockRequireJS;
-(window as any).requirejs.config  = jest.fn();
+(window as any).requirejs.config = jest.fn();
 
 // Manager actions passed as the third arg when instantiating the WidgetManager class
 const mockManagerActions: ManagerActions["actions"] = {
   appendOutput: jest.fn(),
   clearOutput: jest.fn(),
-  updateCellStatus: jest.fn(),
-  promptInputRequest: jest.fn()
+  promptInputRequest: jest.fn(),
 };
 
 // Default modelById stub
@@ -35,7 +34,11 @@ describe("WidgetManager", () => {
     });
 
     it("returns a class if it exists", () => {
-      const manager = new WidgetManager(null, mockModelById, mockManagerActions);
+      const manager = new WidgetManager(
+        null,
+        mockModelById,
+        mockManagerActions
+      );
       const view = manager.loadClass(
         "IntSliderView",
         "@jupyter-widgets/controls",
@@ -45,14 +48,14 @@ describe("WidgetManager", () => {
     });
 
     it("Returns a valid module class successfully from CDN for custom widgets", () => {
-      const manager = new WidgetManager(null, mockModelById, mockManagerActions);
+      const manager = new WidgetManager(
+        null,
+        mockModelById,
+        mockManagerActions
+      );
       const requireLoaderSpy = jest.spyOn(customWidgetLoader, "requireLoader");
 
-      return manager.loadClass(
-        "foo",
-        "fooModule",
-        "1.1.0"
-      ).then(view => {
+      return manager.loadClass("foo", "fooModule", "1.1.0").then((view) => {
         expect(requireLoaderSpy).toHaveBeenCalledTimes(1);
         // Get the second arg to Monaco.editor.create call
         const mockLoaderArgs = requireLoaderSpy.mock.calls[0];
@@ -66,23 +69,31 @@ describe("WidgetManager", () => {
     });
 
     it("Returns an error if the class does not exist on the module", () => {
-      const manager = new WidgetManager(null, mockModelById, mockManagerActions);
+      const manager = new WidgetManager(
+        null,
+        mockModelById,
+        mockManagerActions
+      );
       const requireLoaderSpy = jest.spyOn(customWidgetLoader, "requireLoader");
 
-      return manager.loadClass(
-        "INVALID_CLASS",
-        "fooModule",
-        "1.1.0"
-      ).catch(error => {
-        expect(requireLoaderSpy).toHaveBeenCalledTimes(1);
-        expect(error).toBe("Class INVALID_CLASS not found in module fooModule@1.1.0");
-      });
+      return manager
+        .loadClass("INVALID_CLASS", "fooModule", "1.1.0")
+        .catch((error) => {
+          expect(requireLoaderSpy).toHaveBeenCalledTimes(1);
+          expect(error).toBe(
+            "Class INVALID_CLASS not found in module fooModule@1.1.0"
+          );
+        });
     });
   });
 
   describe("create_view", () => {
     it("returns a widget mounted on the provided element", async () => {
-      const manager = new WidgetManager(null, mockModelById, mockManagerActions);
+      const manager = new WidgetManager(
+        null,
+        mockModelById,
+        mockManagerActions
+      );
       const model = {
         _dom_classes: [],
         _model_module: "@jupyter-widgets/controls",
@@ -102,7 +113,7 @@ describe("WidgetManager", () => {
         readout: true,
         readout_format: "d",
         step: 1,
-        value: 7
+        value: 7,
       };
       const widget = await manager.new_widget_from_state_and_id(
         model,
@@ -137,7 +148,7 @@ describe("WidgetManager", () => {
         step: 1,
         value: 7,
         style: "IPY_MODEL_layout_id",
-        layout: "IPY_MODEL_style_id"
+        layout: "IPY_MODEL_style_id",
       };
       const layoutModel = {
         _model_module: "@jupyter-widgets/base",
@@ -146,7 +157,7 @@ describe("WidgetManager", () => {
         _view_count: null,
         _view_module: "@jupyter-widgets/base",
         _view_module_version: "1.2.0",
-        _view_name: "LayoutView"
+        _view_name: "LayoutView",
       };
       const styleModel = {
         _dom_classes: [],
@@ -156,7 +167,7 @@ describe("WidgetManager", () => {
         _view_count: null,
         _view_module: "@jupyter-widgets/base",
         _view_module_version: "1.2.0",
-        _view_name: "StyleView"
+        _view_name: "StyleView",
       };
       const modelById = (id: string) => {
         const model = id === "layout_id" ? layoutModel : styleModel;

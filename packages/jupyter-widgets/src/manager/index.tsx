@@ -9,7 +9,6 @@ import {
   LocalKernelProps,
   RemoteKernelProps,
   ContentRef,
-  KernelStatus
 } from "@nteract/core";
 import { CellId } from "@nteract/commutable";
 import { WidgetModel } from "@jupyter-widgets/base";
@@ -27,7 +26,6 @@ export interface ManagerActions {
   actions: {
     appendOutput: (output: any) => void;
     clearOutput: () => void;
-    updateCellStatus: (status: KernelStatus) => void;
     promptInputRequest: (prompt: string, password: boolean) => void;
   };
 }
@@ -37,7 +35,10 @@ interface OwnProps {
   model_id: string;
   id: CellId;
   contentRef: ContentRef;
-  customWidgetLoader?: (moduleName: string, moduleVersion: string) => Promise<any>;
+  customWidgetLoader?: (
+    moduleName: string,
+    moduleVersion: string
+  ) => Promise<any>;
 }
 
 type Props = ConnectedProps & OwnProps & ManagerActions;
@@ -104,22 +105,14 @@ const mapDispatchToProps = (dispatch: any, props: OwnProps): ManagerActions => {
           actions.appendOutput({
             id: props.id,
             contentRef: props.contentRef,
-            output
+            output,
           })
         ),
       clearOutput: () =>
         dispatch(
           actions.clearOutputs({
             id: props.id,
-            contentRef: props.contentRef
-          })
-        ),
-      updateCellStatus: (status: KernelStatus) =>
-        dispatch(
-          actions.updateCellStatus({
-            id: props.id,
             contentRef: props.contentRef,
-            status
           })
         ),
       promptInputRequest: (prompt: string, password: boolean) =>
@@ -128,10 +121,10 @@ const mapDispatchToProps = (dispatch: any, props: OwnProps): ManagerActions => {
             id: props.id,
             contentRef: props.contentRef,
             prompt,
-            password
+            password,
           })
-        )
-    }
+        ),
+    },
   };
 };
 
